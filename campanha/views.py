@@ -11,10 +11,42 @@ from .utils import is_admin, is_supervisor
 
 from django.contrib.auth.models import User
 
+from .utils import is_admin, is_supervisor, is_lider
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseForbidden
+
+@login_required
 def dashboard(request):
-    total_pessoas = Pessoa.objects.count()
-    total_bairros = Bairro.objects.count()
-    total_lideres = Lider.objects.count()
+
+    # 🧑 ADMIN → tudo
+    if is_admin(request.user):
+        total_pessoas = Pessoa.objects.count()
+        total_bairros = Bairro.objects.count()
+        total_lideres = Lider.objects.count()
+
+    # 🧑‍💼 SUPERVISOR → só bairros dele
+    elif is_supervisor(request.user):
+        bairros = request.user.supervisor.bairros.all()
+
+        total_pessoas = Pessoa.objects.filter(bairro__in=bairros).count()
+        total_bairros = bairros.count()
+        total_lideres = Lider.objects.filter(bairro__in=bairros).count()
+
+    # 👤 LÍDER → só dele
+    elif is_lider(request.user):
+        lider = request.user.lider
+
+        total_pessoas = Pessoa.objects.filter(lider=lider).count()
+
+        return render(request, 'campanha/dashboard.html', {
+            'total_pessoas': total_pessoas,
+            'total_bairros': 1,
+            'total_lideres': 1,
+            'bairro': lider.bairro.nome,  # ✅ AQUI SIM
+        })
+
+    else:
+        return HttpResponseForbidden("Acesso negado")
 
     return render(request, 'campanha/dashboard.html', {
         'total_pessoas': total_pessoas,
@@ -22,37 +54,79 @@ def dashboard(request):
         'total_lideres': total_lideres,
     })
 
+from .utils import is_admin, is_supervisor, is_lider
+
+@login_required
 def lista_pessoas(request):
-    pessoas = Pessoa.objects.select_related('bairro', 'lider').all()
+
+    if is_admin(request.user):
+        pessoas = Pessoa.objects.select_related('bairro', 'lider').all()
+
+    elif is_supervisor(request.user):
+        bairros = request.user.supervisor.bairros.all()
+        pessoas = Pessoa.objects.select_related('bairro', 'lider').filter(bairro__in=bairros)
+
+    elif is_lider(request.user):
+        pessoas = Pessoa.objects.filter(lider=request.user.lider)
+
+    else:
+        return HttpResponseForbidden("Acesso negado")
 
     return render(request, 'campanha/pessoas.html', {
         'pessoas': pessoas
     })
 
 
+
+from .utils import is_admin, is_supervisor, is_lider
+
+@login_required
 def criar_pessoa(request):
-    if request.method == 'POST':
-        nome = request.POST.get('nome')
-        telefone = request.POST.get('telefone')
-        bairro_id = request.POST.get('bairro')
-        lider_id = request.POST.get('lider')
 
-        Pessoa.objects.create(
-            nome=nome,
-            telefone=telefone,
-            bairro_id=bairro_id,
-            lider_id=lider_id
-        )
+    # 🔐 PERMISSÃO
+    if not (is_admin(request.user) or is_lider(request.user)):
+        return HttpResponseForbidden("Acesso negado")
 
-        return redirect('lista_pessoas')
+    # 👤 SE FOR LÍDER (automático)
+    if is_lider(request.user):
+        lider = request.user.lider
 
-    bairros = Bairro.objects.all()
-    lideres = Lider.objects.all()
+        if request.method == 'POST':
+            nome = request.POST.get('nome')
+            telefone = request.POST.get('telefone')
 
-    return render(request, 'campanha/criar_pessoa.html', {
-        'bairros': bairros,
-        'lideres': lideres
-    })
+            Pessoa.objects.create(
+                nome=nome,
+                telefone=telefone,
+                bairro=lider.bairro,
+                lider=lider
+            )
+
+            return redirect('lista_pessoas')
+
+        return render(request, 'campanha/criar_pessoa.html')
+
+    # 🧑 ADMIN (pode escolher)
+    if is_admin(request.user):
+        if request.method == 'POST':
+            nome = request.POST.get('nome')
+            telefone = request.POST.get('telefone')
+            bairro_id = request.POST.get('bairro')
+            lider_id = request.POST.get('lider')
+
+            Pessoa.objects.create(
+                nome=nome,
+                telefone=telefone,
+                bairro_id=bairro_id,
+                lider_id=lider_id
+            )
+
+            return redirect('lista_pessoas')
+
+        return render(request, 'campanha/criar_pessoa_admin.html', {
+            'bairros': Bairro.objects.all(),
+            'lideres': Lider.objects.all()
+        })
 
 def lista_bairros(request):
     return HttpResponse("Lista de Bairros")

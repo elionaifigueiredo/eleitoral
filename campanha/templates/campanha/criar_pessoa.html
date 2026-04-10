@@ -22,24 +22,6 @@
                 <input type="text" name="telefone" class="form-control">
             </div>
 
-            <div class="mb-3">
-                <label>Bairro</label>
-                <select name="bairro" class="form-control">
-                    {% for b in bairros %}
-                        <option value="{{ b.id }}">{{ b.nome }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="mb-3">
-                <label>Líder</label>
-                <select name="lider" class="form-control">
-                    {% for l in lideres %}
-                        <option value="{{ l.id }}">{{ l.user.username }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
             <button class="btn btn-success">Salvar</button>
             <a href="/pessoas/" class="btn btn-secondary">Voltar</a>
 

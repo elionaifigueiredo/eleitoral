@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h4>Nova Pessoa (Admin)</h4>
+
+<form method="POST">
+    {% csrf_token %}
+
+    <input type="text" name="nome" class="form-control mb-2" placeholder="Nome" required>
+
+    <input type="text" name="telefone" class="form-control mb-2" placeholder="Telefone">
+
+    <select name="bairro" class="form-control mb-2">
+        {% for b in bairros %}
+        <option value="{{ b.id }}">{{ b.nome }}</option>
+        {% endfor %}
+    </select>
+
+    <select name="lider" class="form-control mb-2">
+        {% for l in lideres %}
+        <option value="{{ l.id }}">{{ l.user.username }}</option>
+        {% endfor %}
+    </select>
+
+    <button class="btn btn-success">Salvar</button>
+</form>
+
+{% endblock %}
