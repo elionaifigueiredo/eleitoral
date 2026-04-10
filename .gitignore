@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.pyc
+
+# Ambiente virtual
+venv/
+.env/
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Banco local (se usar sqlite)
+db.sqlite3
+
+# Arquivos sensíveis
+.env
+
+# Uploads
+media/
+
+# Arquivos estáticos coletados
+staticfiles/

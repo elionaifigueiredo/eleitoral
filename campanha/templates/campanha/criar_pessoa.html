@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="card shadow">
+    <div class="card-header">
+        <h4>Nova Pessoa</h4>
+    </div>
+
+    <div class="card-body">
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label>Nome</label>
+                <input type="text" name="nome" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label>Telefone</label>
+                <input type="text" name="telefone" class="form-control">
+            </div>
+
+            <div class="mb-3">
+                <label>Bairro</label>
+                <select name="bairro" class="form-control">
+                    {% for b in bairros %}
+                        <option value="{{ b.id }}">{{ b.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label>Líder</label>
+                <select name="lider" class="form-control">
+                    {% for l in lideres %}
+                        <option value="{{ l.id }}">{{ l.user.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button class="btn btn-success">Salvar</button>
+            <a href="/pessoas/" class="btn btn-secondary">Voltar</a>
+
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}

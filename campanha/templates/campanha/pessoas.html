@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between mb-3">
+    <h3>Pessoas</h3>
+    <a href="/pessoas/nova/" class="btn btn-primary">Nova Pessoa</a>
+</div>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Nome</th>
+            <th>Telefone</th>
+            <th>Bairro</th>
+            <th>Líder</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for p in pessoas %}
+        <tr>
+            <td>{{ p.nome }}</td>
+            <td>{{ p.telefone }}</td>
+            <td>{{ p.bairro.nome }}</td>
+            <td>{{ p.lider.user.username }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}
