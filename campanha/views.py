@@ -220,3 +220,41 @@ def criar_lider(request):
     return render(request, 'campanha/criar_lider.html', {
         'bairros': Bairro.objects.all()
     })
+
+
+from django.db.models import Count
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseForbidden
+
+from .models import Lider
+from .utils import is_admin, is_supervisor
+
+
+@login_required
+def ranking_lideres(request):
+
+    # 🧑 ADMIN → vê todos
+    if is_admin(request.user):
+        ranking = (
+            Lider.objects
+            .annotate(total_pessoas=Count('pessoas'))
+            .order_by('-total_pessoas')
+        )
+
+    # 🧑‍💼 SUPERVISOR → só bairros dele
+    elif is_supervisor(request.user):
+        bairros = request.user.supervisor.bairros.all()
+
+        ranking = (
+            Lider.objects
+            .filter(bairro__in=bairros)
+            .annotate(total_pessoas=Count('pessoas'))
+            .order_by('-total_pessoas')
+        )
+
+    else:
+        return HttpResponseForbidden("Acesso negado")
+
+    return render(request, 'campanha/ranking.html', {
+        'ranking': ranking
+    })
