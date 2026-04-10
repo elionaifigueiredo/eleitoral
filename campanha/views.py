@@ -1,9 +1,11 @@
 from django.shortcuts import render, redirect
 from .models import Pessoa, Bairro, Lider
+from .utils import is_supervisor
 
 # Create your views here.
 from django.http import HttpResponse
-
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseForbidden
 
 def dashboard(request):
     total_pessoas = Pessoa.objects.count()
@@ -51,8 +53,10 @@ def criar_pessoa(request):
 def lista_bairros(request):
     return HttpResponse("Lista de Bairros")
 
+@login_required
 def criar_bairro(request):
-    return HttpResponse("Criar Bairro")
+    if not is_supervisor(request.user):
+        return HttpResponseForbidden("Acesso negado")
 
 def lista_lideres(request):
     return HttpResponse("Lista de Líderes")
