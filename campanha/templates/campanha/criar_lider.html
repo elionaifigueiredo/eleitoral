@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="card shadow">
+    <div class="card-header">
+        <h4>Novo Líder</h4>
+    </div>
+
+    <div class="card-body">
+
+        {% if erro %}
+        <div class="alert alert-danger">
+            {{ erro }}
+        </div>
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label>Usuário</label>
+                <input type="text" name="username" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label>Senha</label>
+                <input type="password" name="password" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label>Bairro</label>
+                <select name="bairro" class="form-control" required>
+                    {% for b in bairros %}
+                        <option value="{{ b.id }}">{{ b.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button class="btn btn-success">Salvar</button>
+            <a href="/lideres/" class="btn btn-secondary">Voltar</a>
+
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}

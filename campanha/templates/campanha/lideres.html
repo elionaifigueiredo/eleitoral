@@ -3,25 +3,27 @@
 {% block content %}
 
 <div class="d-flex justify-content-between mb-3">
-    <h3>Bairros</h3>
-    <a href="/bairros/novo/" class="btn btn-primary">Novo Bairro</a>
+    <h3>Líderes</h3>
+    <a href="/lideres/novo/" class="btn btn-primary">Novo Líder</a>
 </div>
 
 <table class="table table-bordered">
     <thead>
         <tr>
-            <th>Nome</th>
+            <th>Usuário</th>
+            <th>Bairro</th>
         </tr>
     </thead>
 
     <tbody>
-        {% for b in bairros %}
+        {% for l in lideres %}
         <tr>
-            <td>{{ b.nome }}</td>
+            <td>{{ l.user.username }}</td>
+            <td>{{ l.bairro.nome }}</td>
         </tr>
         {% empty %}
         <tr>
-            <td>Nenhum bairro cadastrado</td>
+            <td colspan="2">Nenhum líder cadastrado</td>
         </tr>
         {% endfor %}
     </tbody>
