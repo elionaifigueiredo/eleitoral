@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <title>Sistema Campanha</title>
@@ -9,48 +10,84 @@
 
 <body>
 
-<div class="d-flex">
+    <div class="d-flex">
 
-    <!-- MENU LATERAL -->
-    <div class="bg-dark text-white p-3" style="width: 250px; min-height: 100vh;">
-        <h4 class="text-center">Campanha</h4>
+
+
+        <!-- MENU LATERAL -->
+        <div class="bg-dark text-white p-3" style="width: 250px; min-height: 100vh;">
+            <h4 class="text-center">Campanha</h4>
+            <hr>
+
+
+
+
+            <ul class="nav flex-column">
+
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="/">
+                        📊 Dashboard
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="/pessoas/">
+                        👥 Pessoas
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="/bairros/">
+                        🏘️ Bairros
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="/lideres/">
+                        🧑‍💼 Líderes
+                    </a>
+                </li>
+
+            </ul>
+
+
+            <nav class="navbar navbar-light bg-light px-3">
+
+                <span class="navbar-text">
+                    👤 {{ request.user.username }}
+
+                    {% if request.user.perfil %}
+                    ({{ request.user.perfil.tipo }})
+                    {% endif %}
+                </span>
+
+                <form method="POST" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button class="btn btn-danger btn-sm">Sair</button>
+                </form>
+
+            </nav>
+
+
+        </div>
+
+
+
+
+        <!-- CONTEÚDO -->
+        <div class="flex-grow-1 p-4">
+            {% block content %}{% endblock %}
+        </div>
+
+
+
         <hr>
 
-        <ul class="nav flex-column">
 
-            <li class="nav-item">
-                <a class="nav-link text-white" href="/">
-                    📊 Dashboard
-                </a>
-            </li>
 
-            <li class="nav-item">
-                <a class="nav-link text-white" href="/pessoas/">
-                    👥 Pessoas
-                </a>
-            </li>
 
-            <li class="nav-item">
-                <a class="nav-link text-white" href="/bairros/">
-                    🏘️ Bairros
-                </a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link text-white" href="/lideres/">
-                    🧑‍💼 Líderes
-                </a>
-            </li>
-
-        </ul>
     </div>
-
-    <!-- CONTEÚDO -->
-    <div class="flex-grow-1 p-4">
-        {% block content %}{% endblock %}
-    </div>
-
-</div>
 
 </body>
+
 </html>
