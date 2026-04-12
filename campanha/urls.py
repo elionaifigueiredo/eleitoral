@@ -20,6 +20,8 @@ path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     # Bairros (supervisor)
     path('bairros/', views.lista_bairros, name='lista_bairros'),
     path('bairros/novo/', views.criar_bairro, name='criar_bairro'),
+    path('bairros/editar/<int:id>/', views.editar_bairro, name='editar_bairro'),
+    path('bairros/excluir/<int:id>/', views.excluir_bairro, name='excluir_bairro'),
 
     # Líderes
     path('lideres/', views.lista_lideres, name='lista_lideres'),

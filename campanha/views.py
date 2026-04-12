@@ -1,19 +1,15 @@
 from django.shortcuts import render, redirect
+import requests
 
 from .models import Pessoa, Bairro, Lider, Perfil
-from .utils import is_supervisor
 
 # Create your views here.
-from django.http import HttpResponse
-from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseForbidden
-from .utils import is_admin, is_supervisor
 
 from django.contrib.auth.models import User
 
 from .utils import is_admin, is_supervisor, is_lider
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseForbidden
 
 @login_required
 def dashboard(request):
@@ -152,20 +148,108 @@ def lista_bairros(request):
 
 
 # ➕ CRIAR BAIRRO
+
 @login_required
 def criar_bairro(request):
-    if not (is_admin(request.user) or is_supervisor(request.user)):
-        return HttpResponseForbidden("Acesso negado")
-
     if request.method == 'POST':
         nome = request.POST.get('nome')
+        cep = request.POST.get('cep')
 
-        if nome:
-            Bairro.objects.get_or_create(nome=nome.strip())
+        endereco = None
+        latitude = None
+        longitude = None
+
+        # 🔎 BUSCA CEP
+        if cep:
+            cep_limpo = cep.replace('-', '').replace('.', '')
+
+            url = f"https://viacep.com.br/ws/{cep_limpo}/json/"
+            response = requests.get(url)
+
+            if response.status_code == 200:
+                data = response.json()
+
+                if not data.get('erro'):
+                    endereco = f"{data.get('logradouro')}, {data.get('bairro')} - {data.get('localidade')}"
+
+                    # 🔥 pegar lat/long com Google Maps (segunda API)
+                    geo_url = f"https://maps.googleapis.com/maps/api/geocode/json?address={cep}&key=YOUR_API_KEY"
+                    geo_response = requests.get(geo_url)
+
+                    if geo_response.status_code == 200:
+                        geo_data = geo_response.json()
+
+                        if geo_data['results']:
+                            location = geo_data['results'][0]['geometry']['location']
+                            latitude = location['lat']
+                            longitude = location['lng']
+
+        Bairro.objects.create(
+            nome=nome,
+            cep=cep,
+            endereco=endereco,
+            latitude=latitude,
+            longitude=longitude
+        )
 
         return redirect('lista_bairros')
 
     return render(request, 'campanha/criar_bairro.html')
+
+
+from decimal import Decimal, InvalidOperation
+from django.shortcuts import get_object_or_404
+
+@login_required
+def editar_bairro(request, id):
+    if not (is_admin(request.user) or is_supervisor(request.user)):
+        return HttpResponseForbidden("Acesso negado")
+
+    bairro = get_object_or_404(Bairro, id=id)
+
+    if request.method == 'POST':
+        bairro.nome = request.POST.get('nome')
+        bairro.cep = request.POST.get('cep')
+        bairro.endereco = request.POST.get('endereco')
+
+
+    lat = request.POST.get('latitude')
+    lng = request.POST.get('longitude')
+
+    try:
+        bairro.latitude = Decimal(lat) if lat else None
+    except (InvalidOperation, TypeError):
+        bairro.latitude = None
+
+    try:
+        bairro.longitude = Decimal(lng) if lng else None
+    except (InvalidOperation, TypeError):
+        bairro.longitude = None
+        bairro.save()
+
+        return redirect('lista_bairros')
+
+    return render(request, 'campanha/editar_bairro.html', {
+        'bairro': bairro
+    })
+
+from .utils import is_admin
+
+@login_required
+def excluir_bairro(request, id):
+    if not is_admin(request.user):
+        return HttpResponseForbidden("Apenas admin pode excluir")
+
+    bairro = get_object_or_404(Bairro, id=id)
+
+    if request.method == 'POST':
+        bairro.delete()
+        return redirect('lista_bairros')
+
+    return render(request, 'campanha/confirmar_exclusao.html', {
+        'objeto': bairro
+    })
+
 
 @login_required
 def lista_lideres(request):
@@ -220,11 +304,6 @@ def criar_lider(request):
     return render(request, 'campanha/criar_lider.html', {
         'bairros': Bairro.objects.all()
     })
-
-
-from django.db.models import Count
-from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseForbidden
 
 from .models import Lider
 from .utils import is_admin, is_supervisor

@@ -13,8 +13,29 @@
             {% csrf_token %}
 
             <div class="mb-3">
-                <label>Nome do Bairro</label>
+                <label>Nome</label>
                 <input type="text" name="nome" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label>CEP</label>
+                <div class="input-group">
+                    <input type="text" id="cep" name="cep" class="form-control" placeholder="00000-000">
+                    <button type="button" class="btn btn-primary" onclick="buscarCEP()">Buscar</button>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label>Endereço</label>
+                <input type="text" id="endereco" name="endereco" class="form-control">
+            </div>
+            <div class="mb-3">
+                <label>Latitude</label>
+                <input type="text" name="latitude" class="form-control">
+            </div>
+
+            <div class="mb-3">
+                <label>Longitude</label>
+                <input type="text" name="longitude" class="form-control">
             </div>
 
             <button class="btn btn-success">Salvar</button>
@@ -24,5 +45,32 @@
 
     </div>
 </div>
+
+<script>
+function buscarCEP() {
+    let cep = document.getElementById('cep').value.replace(/\D/g, '');
+
+    if (cep.length !== 8) {
+        alert("CEP inválido");
+        return;
+    }
+
+    fetch(`https://viacep.com.br/ws/${cep}/json/`)
+        .then(res => res.json())
+        .then(data => {
+
+            if (data.erro) {
+                alert("CEP não encontrado");
+                return;
+            }
+
+            let endereco = `${data.logradouro}, ${data.bairro} - ${data.localidade}`;
+
+            document.getElementById('endereco').value = endereco;
+
+        })
+        .catch(() => alert("Erro ao buscar CEP"));
+}
+</script>
 
 {% endblock %}

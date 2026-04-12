@@ -5,9 +5,11 @@ from django.contrib.auth.models import User
 # 🏘️ Bairro
 class Bairro(models.Model):
     nome = models.CharField(max_length=100, unique=True)
+    cep = models.CharField(max_length=10, blank=True, null=True)
+    endereco = models.CharField(max_length=255, blank=True, null=True)
 
-    def __str__(self):
-        return self.nome
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True)
 
 
 # 🔐 Perfil de acesso
@@ -48,7 +50,8 @@ class Pessoa(models.Model):
     nome = models.CharField(max_length=150)
     telefone = models.CharField(max_length=20, blank=True, null=True)
 
-    bairro = models.ForeignKey(Bairro, on_delete=models.CASCADE, related_name='pessoas')
+    # bairro = models.ForeignKey(Bairro, on_delete=models.CASCADE, related_name='pessoas')
+    bairro = models.ForeignKey(Bairro, on_delete=models.CASCADE)
     lider = models.ForeignKey(Lider, on_delete=models.CASCADE, related_name='pessoas')
 
     data_cadastro = models.DateTimeField(auto_now_add=True)
