@@ -11,48 +11,46 @@ from .models import Pessoa, Bairro, Lider, Perfil
 from django.contrib.auth.models import User
 
 from .utils import is_admin, is_supervisor, is_lider
-from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseForbidden
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseForbidden
+from django.shortcuts import render
+from django.db.models import Count
+
+from .models import Lider
+
+from django.contrib.auth.models import User
+from django.contrib import messages
 
 @login_required
 def dashboard(request):
 
-    # 🧑 ADMIN → tudo
+    total_pessoas = Pessoa.objects.count()
+    total_bairros = Bairro.objects.count()
+    total_lideres = Lider.objects.count()
+
+    # 🔐 gráfico só para admin
+    lideres = []
+    labels = []
+    dados = []
+
     if is_admin(request.user):
-        total_pessoas = Pessoa.objects.count()
-        total_bairros = Bairro.objects.count()
-        total_lideres = Lider.objects.count()
 
-    # 🧑‍💼 SUPERVISOR → só bairros dele
-    elif is_supervisor(request.user):
-        bairros = request.user.supervisor.bairros.all()
+        lideres_qs = Lider.objects.annotate(
+            total_pessoas=Count('pessoas')
+        ).order_by('-total_pessoas')
 
-        total_pessoas = Pessoa.objects.filter(bairro__in=bairros).count()
-        total_bairros = bairros.count()
-        total_lideres = Lider.objects.filter(bairro__in=bairros).count()
-
-    # 👤 LÍDER → só dele
-    elif is_lider(request.user):
-        lider = request.user.lider
-
-        total_pessoas = Pessoa.objects.filter(lider=lider).count()
-
-        return render(request, 'campanha/dashboard.html', {
-            'total_pessoas': total_pessoas,
-            'total_bairros': 1,
-            'total_lideres': 1,
-            'bairro': lider.bairro.nome,  # ✅ AQUI SIM
-        })
-
-    else:
-        return HttpResponseForbidden("Acesso negado")
+        labels = [l.nome_completo for l in lideres_qs]
+        dados = [l.total_pessoas for l in lideres_qs]
 
     return render(request, 'campanha/dashboard.html', {
         'total_pessoas': total_pessoas,
         'total_bairros': total_bairros,
         'total_lideres': total_lideres,
+        'labels': labels,
+        'dados': dados,
+        'is_admin': is_admin(request.user),
     })
-
 
 @login_required
 def lista_pessoas(request):
@@ -248,10 +246,11 @@ def lista_lideres(request):
     })
 
 
-
 @login_required
 def criar_lider(request):
+
     if request.method == 'POST':
+
         username = request.POST.get('username')
         password = request.POST.get('password')
         bairro_id = request.POST.get('bairro')
@@ -260,6 +259,14 @@ def criar_lider(request):
         titulo_eleitor = request.POST.get('titulo_eleitor')
         zona = request.POST.get('zona')
         secao = request.POST.get('secao')
+        meta = request.POST.get('meta')
+
+        # 🚨 VALIDAÇÃO IMPORTANTE (EVITA ERRO QUE VOCÊ TEVE)
+        if User.objects.filter(username=username).exists():
+            return render(request, 'campanha/criar_lider.html', {
+                'bairros': Bairro.objects.all(),
+                'erro': 'Esse usuário já existe. Escolha outro username.'
+            })
 
         # 🔐 cria usuário
         user = User.objects.create_user(
@@ -267,15 +274,13 @@ def criar_lider(request):
             password=password
         )
 
-        # 👤 cria perfil (AQUI ESTÁ O SEGREDO)
+        # 👤 cria perfil
         Perfil.objects.create(
             user=user,
             tipo='lider'
         )
 
         # 🧑 cria líder
-        meta = request.POST.get('meta')
-
         Lider.objects.create(
             user=user,
             bairro_id=bairro_id,
@@ -291,6 +296,7 @@ def criar_lider(request):
     return render(request, 'campanha/criar_lider.html', {
         'bairros': Bairro.objects.all()
     })
+
 
 
 @login_required
@@ -357,8 +363,8 @@ def ranking_lideres(request):
 
     # 📊 ranking com total
     ranking = (
-        lideres
-        .annotate(total_pessoas=Count('pessoa'))
+        Lider.objects
+        .annotate(total_pessoas=Count('pessoas'))
         .order_by('-total_pessoas')
     )
 

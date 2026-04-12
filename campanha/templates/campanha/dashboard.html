@@ -23,14 +23,6 @@
             </div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card text-white bg-success mb-3">
-            <div class="card-body">
-                <h5>Bairros</h5>
-                <h2>{{ bairro }}</h2>
-            </div>
-        </div>
-    </div>
 
     <div class="col-md-4">
         <div class="card text-white bg-warning mb-3">
@@ -42,5 +34,20 @@
     </div>
 
 </div>
+
+<!-- 📊 GRÁFICO SÓ ADMIN -->
+{% if is_admin %}
+
+<div class="card shadow mt-4">
+    <div class="card-header bg-dark text-white">
+        <h5 class="mb-0">📊 Desempenho dos Líderes</h5>
+    </div>
+
+    <div class="card-body">
+        <canvas id="graficoLideres"></canvas>
+    </div>
+</div>
+
+{% endif %}
 
 {% endblock %}

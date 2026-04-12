@@ -6,7 +6,51 @@
     <title>Sistema Campanha</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+
+
+
+
 </head>
+{% block scripts %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    {% if is_admin %}
+
+        const ctx = document.getElementById('graficoLideres');
+
+        if (!ctx) return;
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: {{ labels|safe }},
+                datasets: [{
+                    label: 'Pessoas por Líder',
+                    data: {{ dados|safe }},
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)'
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+    {% endif %}
+
+});
+</script>
+
+{% endblock %}
 
 <body>
 
@@ -93,6 +137,8 @@
 
     </div>
 
+
+    
 </body>
 
 </html>

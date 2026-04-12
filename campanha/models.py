@@ -51,7 +51,12 @@ class Pessoa(models.Model):
 
     # bairro = models.ForeignKey(Bairro, on_delete=models.CASCADE)
     bairro = models.ForeignKey('Bairro', on_delete=models.CASCADE)
-    lider = models.ForeignKey('Lider', on_delete=models.CASCADE)
+    # lider = models.ForeignKey('Lider', on_delete=models.CASCADE)
+    lider = models.ForeignKey(
+        'Lider',
+        on_delete=models.CASCADE,
+        related_name='pessoas'
+    )
     data_cadastro = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
