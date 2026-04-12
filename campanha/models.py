@@ -36,33 +36,50 @@ class Supervisor(models.Model):
         return self.user.username
 
 
-# 🧑 Líder
-class Lider(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='lider')
-    bairro = models.ForeignKey(Bairro, on_delete=models.CASCADE, related_name='lideres')
-
-    def __str__(self):
-        return f"{self.user.username} - {self.bairro.nome}"
-
 
 # 👥 Pessoas (eleitores)
 class Pessoa(models.Model):
     nome = models.CharField(max_length=150)
     telefone = models.CharField(max_length=20, blank=True, null=True)
 
-    # bairro = models.ForeignKey(Bairro, on_delete=models.CASCADE, related_name='pessoas')
-    bairro = models.ForeignKey(Bairro, on_delete=models.CASCADE)
-    lider = models.ForeignKey(Lider, on_delete=models.CASCADE, related_name='pessoas')
+    cpf = models.CharField(max_length=14, unique=True, null=True, blank=True)
+    rg = models.CharField(max_length=20, blank=True, null=True)
 
+    titulo_eleitor = models.CharField(max_length=20, blank=True, null=True)
+    zona = models.CharField(max_length=10, blank=True, null=True)
+    secao = models.CharField(max_length=10, blank=True, null=True)
+
+    # bairro = models.ForeignKey(Bairro, on_delete=models.CASCADE)
+    bairro = models.ForeignKey('Bairro', on_delete=models.CASCADE)
+    lider = models.ForeignKey('Lider', on_delete=models.CASCADE)
     data_cadastro = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.nome
+    
+
+# 🧑 Líder
+class Lider(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    bairro = models.ForeignKey(Bairro, on_delete=models.CASCADE)
+    bonus = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    nome_completo = models.CharField(max_length=150)
+    titulo_eleitor = models.CharField(max_length=20)
+    zona = models.CharField(max_length=10)
+    secao = models.CharField(max_length=10)
+    meta = models.IntegerField(default=100)
+
+    def __str__(self):
+        return f"{self.nome_completo} - {self.bairro.nome}"
 
 
 # 💰 Bônus (já preparado)
 class Bonus(models.Model):
-    lider = models.ForeignKey(Lider, on_delete=models.CASCADE, related_name='bonus')
+    lider = models.ForeignKey(
+    Lider,
+    on_delete=models.CASCADE,
+    related_name='bonificacoes'
+)
     quantidade = models.IntegerField()
     valor = models.DecimalField(max_digits=10, decimal_places=2)
     data = models.DateTimeField(auto_now_add=True)

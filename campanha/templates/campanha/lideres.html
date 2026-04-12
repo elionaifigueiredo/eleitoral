@@ -2,31 +2,94 @@
 
 {% block content %}
 
-<div class="d-flex justify-content-between mb-3">
-    <h3>Líderes</h3>
-    <a href="/lideres/novo/" class="btn btn-primary">Novo Líder</a>
+<div class="card shadow">
+
+    <!-- 🔥 HEADER -->
+    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+        <h4 class="mb-0">🧑‍💼 Lista de Líderes</h4>
+
+        <!-- 👉 BOTÃO NOVO LÍDER (SÓ ADMIN) -->
+        {% if request.user.perfil.tipo == 'admin' %}
+        <a href="/lideres/novo/" class="btn btn-success btn-sm shadow-sm">
+            ➕ Novo Líder
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="card-body">
+
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Usuário</th>
+                    <th>Bairro</th>
+                    <th>Meta</th>
+                    <th style="width: 150px;">Ações</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for l in lideres %}
+                <tr>
+                    <td>
+                        <strong>{{ l.nome_completo }}</strong>
+                    </td>
+
+                    <td>
+                        <span class="text-muted">@{{ l.user.username }}</span>
+                    </td>
+
+                    <td>{{ l.bairro.nome }}</td>
+
+                    <!-- 🎯 META -->
+                    <td>
+                        <span class="badge bg-info">
+                            {{ l.meta }}
+                        </span>
+                    </td>
+
+                    <!-- ⚙ AÇÕES -->
+                    <td>
+
+                        {% if request.user.perfil.tipo == 'admin' %}
+                        
+                        <div class="d-flex gap-1">
+
+                            <!-- ✏ EDITAR -->
+                            <a href="/lideres/editar/{{ l.id }}/" 
+                               class="btn btn-sm btn-warning">
+                                ✏
+                            </a>
+
+                            <!-- 🗑 EXCLUIR -->
+                            <a href="/lideres/excluir/{{ l.id }}/" 
+                               class="btn btn-sm btn-danger"
+                               onclick="return confirm('Tem certeza que deseja excluir este líder?')">
+                                🗑
+                            </a>
+
+                        </div>
+
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+
+                    </td>
+
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center">
+                        Nenhum líder cadastrado
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+
+        </table>
+
+    </div>
 </div>
-
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Usuário</th>
-            <th>Bairro</th>
-        </tr>
-    </thead>
-
-    <tbody>
-        {% for l in lideres %}
-        <tr>
-            <td>{{ l.user.username }}</td>
-            <td>{{ l.bairro.nome }}</td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="2">Nenhum líder cadastrado</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
 
 {% endblock %}

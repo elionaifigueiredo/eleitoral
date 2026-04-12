@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="card shadow">
+
+    <div class="card-header bg-dark text-white">
+        <h4 class="mb-0">✏ Editar Líder</h4>
+    </div>
+
+    <div class="card-body">
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label>Nome Completo</label>
+                <input type="text" name="nome_completo" class="form-control"
+                       value="{{ lider.nome_completo }}" required>
+            </div>
+
+            <div class="mb-3">
+                <label>Meta</label>
+                <input type="number" name="meta" class="form-control"
+                       value="{{ lider.meta }}" required>
+            </div>
+
+            <div class="mb-3">
+                <label>Título Eleitor</label>
+                <input type="text" name="titulo_eleitor" class="form-control"
+                       value="{{ lider.titulo_eleitor }}">
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label>Zona</label>
+                    <input type="number" name="zona" class="form-control"
+                           value="{{ lider.zona }}">
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label>Seção</label>
+                    <input type="number" name="secao" class="form-control"
+                           value="{{ lider.secao }}">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label>Bairro</label>
+                <select name="bairro" class="form-control">
+                    {% for b in bairros %}
+                        <option value="{{ b.id }}"
+                            {% if lider.bairro.id == b.id %}selected{% endif %}>
+                            {{ b.nome }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button class="btn btn-success">Salvar</button>
+            <a href="/lideres/" class="btn btn-secondary">Voltar</a>
+
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}

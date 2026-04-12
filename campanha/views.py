@@ -1,5 +1,8 @@
+from django.db.models import Count
 from django.shortcuts import render, redirect
 import requests
+
+from campanha.utils_bonus import calcular_bonus, progresso_meta
 
 from .models import Pessoa, Bairro, Lider, Perfil
 
@@ -50,19 +53,21 @@ def dashboard(request):
         'total_lideres': total_lideres,
     })
 
-from .utils import is_admin, is_supervisor, is_lider
 
 @login_required
 def lista_pessoas(request):
 
+    # 🧑 ADMIN → vê tudo
     if is_admin(request.user):
         pessoas = Pessoa.objects.select_related('bairro', 'lider').all()
 
-    elif is_supervisor(request.user):
+    # 🧑‍💼 SUPERVISOR → só bairros dele
+    elif is_supervisor(request.user) and hasattr(request.user, 'supervisor'):
         bairros = request.user.supervisor.bairros.all()
         pessoas = Pessoa.objects.select_related('bairro', 'lider').filter(bairro__in=bairros)
 
-    elif is_lider(request.user):
+    # 👤 LÍDER → só as dele
+    elif is_lider(request.user) and hasattr(request.user, 'lider'):
         pessoas = Pessoa.objects.filter(lider=request.user.lider)
 
     else:
@@ -73,56 +78,36 @@ def lista_pessoas(request):
     })
 
 
-
-from .utils import is_admin, is_supervisor, is_lider
-
 @login_required
 def criar_pessoa(request):
 
-    # 🔐 PERMISSÃO
     if not (is_admin(request.user) or is_lider(request.user)):
         return HttpResponseForbidden("Acesso negado")
 
-    # 👤 SE FOR LÍDER (automático)
+    lider = None
+
     if is_lider(request.user):
         lider = request.user.lider
 
-        if request.method == 'POST':
-            nome = request.POST.get('nome')
-            telefone = request.POST.get('telefone')
+    if request.method == 'POST':
+        Pessoa.objects.create(
+            nome=request.POST.get('nome'),
+            telefone=request.POST.get('telefone'),
+            cpf=request.POST.get('cpf'),
+            rg=request.POST.get('rg'),
+            titulo_eleitor=request.POST.get('titulo_eleitor'),
+            zona=request.POST.get('zona'),
+            secao=request.POST.get('secao'),
+            bairro_id=request.POST.get('bairro') if is_admin(request.user) else lider.bairro.id,
+            lider_id=request.POST.get('lider') if is_admin(request.user) else lider.id
+        )
+        return redirect('lista_pessoas')
 
-            Pessoa.objects.create(
-                nome=nome,
-                telefone=telefone,
-                bairro=lider.bairro,
-                lider=lider
-            )
-
-            return redirect('lista_pessoas')
-
-        return render(request, 'campanha/criar_pessoa.html')
-
-    # 🧑 ADMIN (pode escolher)
-    if is_admin(request.user):
-        if request.method == 'POST':
-            nome = request.POST.get('nome')
-            telefone = request.POST.get('telefone')
-            bairro_id = request.POST.get('bairro')
-            lider_id = request.POST.get('lider')
-
-            Pessoa.objects.create(
-                nome=nome,
-                telefone=telefone,
-                bairro_id=bairro_id,
-                lider_id=lider_id
-            )
-
-            return redirect('lista_pessoas')
-
-        return render(request, 'campanha/criar_pessoa_admin.html', {
-            'bairros': Bairro.objects.all(),
-            'lideres': Lider.objects.all()
-        })
+    return render(request, 'campanha/criar_pessoa.html', {
+        'bairros': Bairro.objects.all(),
+        'lideres': Lider.objects.all(),
+        'is_admin': is_admin(request.user)
+    })
 
 def lista_bairros(request):
     return HttpResponse("Lista de Bairros")
@@ -256,7 +241,7 @@ def lista_lideres(request):
     if not is_admin(request.user):
         return HttpResponseForbidden("Acesso negado")
 
-    lideres = Lider.objects.select_related('user', 'bairro')
+    lideres = Lider.objects.select_related('bairro', 'user').all()
 
     return render(request, 'campanha/lideres.html', {
         'lideres': lideres
@@ -266,37 +251,39 @@ def lista_lideres(request):
 
 @login_required
 def criar_lider(request):
-    if not is_admin(request.user):
-        return HttpResponseForbidden("Acesso negado")
-
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
         bairro_id = request.POST.get('bairro')
 
-        # evita usuário duplicado
-        if User.objects.filter(username=username).exists():
-            return render(request, 'campanha/criar_lider.html', {
-                'erro': 'Usuário já existe',
-                'bairros': Bairro.objects.all()
-            })
+        nome_completo = request.POST.get('nome_completo')
+        titulo_eleitor = request.POST.get('titulo_eleitor')
+        zona = request.POST.get('zona')
+        secao = request.POST.get('secao')
 
-        # cria usuário
+        # 🔐 cria usuário
         user = User.objects.create_user(
             username=username,
             password=password
         )
 
-        # cria perfil
+        # 👤 cria perfil (AQUI ESTÁ O SEGREDO)
         Perfil.objects.create(
             user=user,
             tipo='lider'
         )
 
-        # cria líder
+        # 🧑 cria líder
+        meta = request.POST.get('meta')
+
         Lider.objects.create(
             user=user,
-            bairro_id=bairro_id
+            bairro_id=bairro_id,
+            nome_completo=nome_completo,
+            titulo_eleitor=titulo_eleitor,
+            zona=zona,
+            secao=secao,
+            meta=meta
         )
 
         return redirect('lista_lideres')
@@ -305,34 +292,93 @@ def criar_lider(request):
         'bairros': Bairro.objects.all()
     })
 
-from .models import Lider
-from .utils import is_admin, is_supervisor
+
+@login_required
+def editar_lider(request, id):
+
+    if not is_admin(request.user):
+        return HttpResponseForbidden("Acesso negado")
+
+    lider = get_object_or_404(Lider, id=id)
+
+    if request.method == 'POST':
+        lider.nome_completo = request.POST.get('nome_completo')
+        lider.meta = request.POST.get('meta')
+        lider.titulo_eleitor = request.POST.get('titulo_eleitor')
+        lider.zona = request.POST.get('zona')
+        lider.secao = request.POST.get('secao')
+        lider.bairro_id = request.POST.get('bairro')
+
+        lider.save()
+        return redirect('lista_lideres')
+
+    return render(request, 'campanha/editar_lider.html', {
+        'lider': lider,
+        'bairros': Bairro.objects.all()
+    })
 
 
 @login_required
+def excluir_lider(request, id):
+
+    if not is_admin(request.user):
+        return HttpResponseForbidden("Acesso negado")
+
+    lider = get_object_or_404(Lider, id=id)
+
+    if request.method == 'POST':
+        lider.delete()
+        return redirect('lista_lideres')
+
+    return render(request, 'campanha/confirmar_exclusao.html', {
+        'obj': lider
+    })
+
+
+from .utils_bonus import calcular_bonus, progresso_meta
+@login_required
 def ranking_lideres(request):
+
+    # 🔒 segurança extra
+    if not hasattr(request.user, 'perfil'):
+        return HttpResponseForbidden("Usuário sem perfil")
 
     # 🧑 ADMIN → vê todos
     if is_admin(request.user):
-        ranking = (
-            Lider.objects
-            .annotate(total_pessoas=Count('pessoas'))
-            .order_by('-total_pessoas')
-        )
+        lideres = Lider.objects.all()
 
     # 🧑‍💼 SUPERVISOR → só bairros dele
     elif is_supervisor(request.user):
         bairros = request.user.supervisor.bairros.all()
-
-        ranking = (
-            Lider.objects
-            .filter(bairro__in=bairros)
-            .annotate(total_pessoas=Count('pessoas'))
-            .order_by('-total_pessoas')
-        )
+        lideres = Lider.objects.filter(bairro__in=bairros)
 
     else:
         return HttpResponseForbidden("Acesso negado")
+
+    # 📊 ranking com total
+    ranking = (
+        lideres
+        .annotate(total_pessoas=Count('pessoa'))
+        .order_by('-total_pessoas')
+    )
+
+    # 💰 cálculo de bônus
+    for l in ranking:
+        l.total_pessoas = l.total_pessoas or 0
+
+        l.progresso = progresso_meta(l.total_pessoas, l.meta)
+        l.bonus_calc = calcular_bonus(l.total_pessoas)
+
+        # 🎨 cor
+        if l.progresso < 50:
+            l.cor = 'bg-danger'
+        elif l.progresso < 100:
+            l.cor = 'bg-warning'
+        else:
+            l.cor = 'bg-success'
+
+        # 🎯 faltam
+        l.faltam = max(l.meta - l.total_pessoas, 0)
 
     return render(request, 'campanha/ranking.html', {
         'ranking': ranking

@@ -3,18 +3,22 @@
 {% block content %}
 
 <div class="card shadow">
-    <div class="card-body text-center">
 
-        <h4 class="text-danger">⚠️ Confirmar Exclusão</h4>
+    <div class="card-header bg-danger text-white">
+        <h4 class="mb-0">🗑 Confirmar Exclusão</h4>
+    </div>
 
-        <p>Deseja realmente excluir:</p>
+    <div class="card-body">
 
-        <h5><strong>{{ objeto.nome }}</strong></h5>
+        <p>Tem certeza que deseja excluir o líder:</p>
+
+        <h5>{{ obj.nome_completo }}</h5>
 
         <form method="POST">
             {% csrf_token %}
+
             <button class="btn btn-danger">Sim, excluir</button>
-            <a href="/bairros/" class="btn btn-secondary">Cancelar</a>
+            <a href="/lideres/" class="btn btn-secondary">Cancelar</a>
         </form>
 
     </div>

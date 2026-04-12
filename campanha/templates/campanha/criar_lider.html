@@ -3,8 +3,8 @@
 {% block content %}
 
 <div class="card shadow">
-    <div class="card-header">
-        <h4>Novo Líder</h4>
+    <div class="card-header bg-dark text-white">
+        <h4 class="mb-0">👤 Novo Líder</h4>
     </div>
 
     <div class="card-body">
@@ -15,34 +15,112 @@
         </div>
         {% endif %}
 
+        {% if sucesso %}
+        <div class="alert alert-success">
+            {{ sucesso }}
+        </div>
+        {% endif %}
+
         <form method="POST">
             {% csrf_token %}
 
-            <div class="mb-3">
-                <label>Usuário</label>
-                <input type="text" name="username" class="form-control" required>
+            <!-- 🔐 ACESSO -->
+            <h5 class="mb-3">🔐 Dados de Acesso</h5>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label>Usuário</label>
+                    <input type="text" name="username" class="form-control" required>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label>Senha</label>
+                    <input type="password" name="password" class="form-control" required>
+                </div>
             </div>
 
+            <hr>
+
+            <!-- 🧾 DADOS DO LÍDER -->
+            <h5 class="mb-3">🧾 Dados do Líder</h5>
+
             <div class="mb-3">
-                <label>Senha</label>
-                <input type="password" name="password" class="form-control" required>
+                <label>Nome Completo</label>
+                <input type="text" name="nome_completo" class="form-control" required>
             </div>
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label>Meta de Pessoas</label>
+                    <input type="number" name="meta" class="form-control" value="100" min="1" required>
+                    <small class="text-muted">Meta individual do líder</small>
+                </div>
+
+                <div class="col-md-8 mb-3">
+                    <label>Título de Eleitor</label>
+                    <input type="text" id="titulo" name="titulo_eleitor" class="form-control" placeholder="0000 0000 0000" required>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label>Zona</label>
+                    <input type="number" name="zona" class="form-control" min="1" required>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label>Seção</label>
+                    <input type="number" name="secao" class="form-control" min="1" required>
+                </div>
+            </div>
+
+            <hr>
+
+            <!-- 📍 LOCALIZAÇÃO -->
+            <h5 class="mb-3">📍 Localização</h5>
 
             <div class="mb-3">
                 <label>Bairro</label>
                 <select name="bairro" class="form-control" required>
+                    <option value="">Selecione um bairro</option>
                     {% for b in bairros %}
                         <option value="{{ b.id }}">{{ b.nome }}</option>
                     {% endfor %}
                 </select>
             </div>
 
-            <button class="btn btn-success">Salvar</button>
-            <a href="/lideres/" class="btn btn-secondary">Voltar</a>
+            <hr>
+
+            <!-- BOTÕES -->
+            <div class="d-flex gap-2">
+                <button class="btn btn-success w-100">
+                    💾 Salvar Líder
+                </button>
+
+                <a href="/lideres/" class="btn btn-secondary w-100">
+                    ↩ Voltar
+                </a>
+            </div>
 
         </form>
 
     </div>
 </div>
+
+<!-- 🎯 MÁSCARA TÍTULO ELEITOR -->
+<script>
+    const titulo = document.getElementById('titulo');
+
+    if (titulo) {
+        titulo.addEventListener('input', function(e) {
+            let v = e.target.value.replace(/\D/g, '');
+
+            v = v.replace(/(\d{4})(\d)/, '$1 $2');
+            v = v.replace(/(\d{4})(\d)/, '$1 $2');
+
+            e.target.value = v;
+        });
+    }
+</script>
 
 {% endblock %}

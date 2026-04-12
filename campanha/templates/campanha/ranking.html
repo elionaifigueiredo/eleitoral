@@ -2,32 +2,113 @@
 
 {% block content %}
 
-<h3>🏆 Ranking de Líderes</h3>
+<div class="card shadow">
+    <div class="card-header bg-dark text-white">
+        <h4 class="mb-0">🏆 Ranking de Líderes</h4>
+    </div>
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Posição</th>
-            <th>Líder</th>
-            <th>Bairro</th>
-            <th>Total de Pessoas</th>
-        </tr>
-    </thead>
+    <div class="card-body">
 
-    <tbody>
-        {% for l in ranking %}
-        <tr>
-            <td>{{ forloop.counter }}º</td>
-            <td>{{ l.user.username }}</td>
-            <td>{{ l.bairro.nome }}</td>
-            <td>{{ l.total_pessoas }}</td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="4">Nenhum dado</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Posição</th>
+                    <th>Líder</th>
+                    <th>Bairro</th>
+                    <th>Pessoas</th>
+                    <th>Meta</th>
+                    <th>Bônus</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for l in ranking %}
+                <tr>
+
+                    <!-- 🏆 POSIÇÃO -->
+                    <td>
+                        {% if forloop.counter == 1 %}
+                            🥇 1º
+                        {% elif forloop.counter == 2 %}
+                            🥈 2º
+                        {% elif forloop.counter == 3 %}
+                            🥉 3º
+                        {% else %}
+                            {{ forloop.counter }}º
+                        {% endif %}
+                    </td>
+
+                    <!-- 👤 NOME -->
+                    <td>
+                        <strong>{{ l.nome_completo }}</strong><br>
+                        <small class="text-muted">@{{ l.user.username }}</small>
+                    </td>
+
+                    <!-- 📍 BAIRRO -->
+                    <td>{{ l.bairro.nome }}</td>
+
+                    <!-- 📊 TOTAL -->
+                    <td>
+                        <span class="badge bg-primary">
+                            {{ l.total_pessoas }}
+                        </span>
+                    </td>
+
+                    <!-- 📈 META (CORRIGIDA) -->
+                  <td style="min-width: 220px;">
+
+    <div class="progress" style="height: 20px;">
+        <div 
+            class="progress-bar {{ l.cor }}"
+            role="progressbar"
+            style="width: {{ l.progresso|default_if_none:0 }}%;">
+
+            {{ l.progresso|default_if_none:0 }}%
+        </div>
+    </div>
+
+    <small class="text-muted">
+        {{ l.total_pessoas }} / {{ l.meta }}
+    </small>
+
+    <br>
+
+    {% if l.faltam > 0 %}
+        <small class="text-muted">
+            Faltam {{ l.faltam }} pessoas
+        </small>
+    {% else %}
+        <small class="text-success">
+            Meta atingida 🎉
+        </small>
+    {% endif %}
+
+</td>
+
+                    <!-- 💰 BONUS -->
+                    <td>
+                        {% if l.bonus_calc > 0 %}
+                            <span class="badge bg-success">
+                                R$ {{ l.bonus_calc }}
+                            </span>
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center">
+                        Nenhum dado disponível
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+
+        </table>
+
+    </div>
+</div>
 
 {% endblock %}

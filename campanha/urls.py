@@ -26,6 +26,8 @@ path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     # Líderes
     path('lideres/', views.lista_lideres, name='lista_lideres'),
     path('lideres/novo/', views.criar_lider, name='criar_lider'),
+    path('lideres/editar/<int:id>/', views.editar_lider, name='editar_lider'),
+    path('lideres/excluir/<int:id>/', views.excluir_lider, name='excluir_lider'),
 
 
     path('ranking/', views.ranking_lideres, name='ranking_lideres'),
