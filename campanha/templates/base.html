@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="pt-br">
 
@@ -6,12 +7,81 @@
     <title>Sistema Campanha</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
-
-
-
-
 </head>
+
+<body>
+
+<!-- 🗳️ BANNER DO CANDIDATO -->
+<div class="position-relative text-center text-white shadow">
+
+    <img src="{% static 'banner.jpg' %}"
+     style="width: 100%; max-height: 220px; object-fit: cover;">
+
+    <div class="position-absolute top-50 start-50 translate-middle">
+        <h2 class="fw-bold">🗳️ NOME DO CANDIDATO</h2>
+        <p class="mb-0">Compromisso com a população</p>
+    </div>
+
+</div>
+
+<div class="d-flex">
+
+    <!-- MENU LATERAL -->
+    <div class="bg-dark text-white p-3" style="width: 250px; min-height: 100vh;">
+        <h4 class="text-center">Campanha</h4>
+        <hr>
+
+        <ul class="nav flex-column">
+
+            <li class="nav-item">
+                <a class="nav-link text-white" href="/">📊 Dashboard</a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link text-white" href="/pessoas/">👥 Pessoas</a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link text-white" href="/bairros/">🏘️ Bairros</a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link text-white" href="/lideres/">🧑‍💼 Líderes</a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link text-white" href="/ranking/">🔥 Ranking</a>
+            </li>
+
+        </ul>
+
+        <nav class="navbar navbar-light bg-light px-3 mt-3">
+
+            <span class="navbar-text">
+                👤 {{ request.user.username }}
+
+                {% if request.user.perfil %}
+                ({{ request.user.perfil.tipo }})
+                {% endif %}
+            </span>
+
+            <form method="POST" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button class="btn btn-danger btn-sm">Sair</button>
+            </form>
+
+        </nav>
+
+    </div>
+
+    <!-- CONTEÚDO -->
+    <div class="flex-grow-1 p-4">
+        {% block content %}{% endblock %}
+    </div>
+
+</div>
+
+<!-- 📊 SCRIPTS (Chart.js correto) -->
 {% block scripts %}
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -52,93 +122,5 @@ document.addEventListener("DOMContentLoaded", function () {
 
 {% endblock %}
 
-<body>
-
-    <div class="d-flex">
-
-
-
-        <!-- MENU LATERAL -->
-        <div class="bg-dark text-white p-3" style="width: 250px; min-height: 100vh;">
-            <h4 class="text-center">Campanha</h4>
-            <hr>
-
-
-
-
-            <ul class="nav flex-column">
-
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="/">
-                        📊 Dashboard
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="/pessoas/">
-                        👥 Pessoas
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="/bairros/">
-                        🏘️ Bairros
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="/lideres/">
-                        🧑‍💼 Líderes
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="/ranking/">
-                        🔥 Ranking
-                    </a>
-                </li>
-
-            </ul>
-
-
-            <nav class="navbar navbar-light bg-light px-3">
-
-                <span class="navbar-text">
-                    👤 {{ request.user.username }}
-
-                    {% if request.user.perfil %}
-                    ({{ request.user.perfil.tipo }})
-                    {% endif %}
-                </span>
-
-                <form method="POST" action="{% url 'logout' %}">
-                    {% csrf_token %}
-                    <button class="btn btn-danger btn-sm">Sair</button>
-                </form>
-
-            </nav>
-
-
-        </div>
-
-
-
-
-        <!-- CONTEÚDO -->
-        <div class="flex-grow-1 p-4">
-            {% block content %}{% endblock %}
-        </div>
-
-
-
-        <hr>
-
-
-
-
-    </div>
-
-
-    
 </body>
-
 </html>
