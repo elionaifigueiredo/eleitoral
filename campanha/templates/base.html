@@ -12,48 +12,51 @@
 <body>
 
 <!-- 🗳️ BANNER DO CANDIDATO -->
-<div class="position-relative text-center text-white shadow">
 
-    <img src="{% static 'banner.jpg' %}"
-     style="width: 100%; max-height: 220px; object-fit: cover;">
-
-    <div class="position-absolute top-50 start-50 translate-middle">
-        <h2 class="fw-bold">🗳️ NOME DO CANDIDATO</h2>
-        <p class="mb-0">Compromisso com a população</p>
-    </div>
-
-</div>
 
 <div class="d-flex">
 
+    
     <!-- MENU LATERAL -->
     <div class="bg-dark text-white p-3" style="width: 250px; min-height: 100vh;">
-        <h4 class="text-center">Campanha</h4>
-        <hr>
 
-        <ul class="nav flex-column">
+        <h4 class="text-center">Campanha 2026</h4>
+        <hr>
+    <div class="position-relative text-center text-white shadow">
+
+        <img src="{% static 'banner.png' %}"
+        style="width: 50%; max-height: 300px; ">
+        <p>Vote : 1000</p>
+    </div>
+    <hr>
+    
+    <ul class="nav flex-column">
+        
+        <li class="nav-item">
+            
+            <a class="nav-link text-white" href="/">📊 Dashboard</a>
+        </li>
+        
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="/ranking/">🔥 Ranking</a>
+                    </li>
+            <li class="nav-item">
+                <a class="nav-link text-white" href="/bairros/">🏘️ Bairros</a>
+            </li>
 
             <li class="nav-item">
-                <a class="nav-link text-white" href="/">📊 Dashboard</a>
+                <a class="nav-link text-white" href="/lideres/">👨‍✈️ Líder</a>
             </li>
 
             <li class="nav-item">
                 <a class="nav-link text-white" href="/pessoas/">👥 Pessoas</a>
             </li>
 
-            <li class="nav-item">
-                <a class="nav-link text-white" href="/bairros/">🏘️ Bairros</a>
-            </li>
 
-            <li class="nav-item">
-                <a class="nav-link text-white" href="/lideres/">🧑‍💼 Líderes</a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link text-white" href="/ranking/">🔥 Ranking</a>
-            </li>
 
         </ul>
+
+        <hr>
 
         <nav class="navbar navbar-light bg-light px-3 mt-3">
 

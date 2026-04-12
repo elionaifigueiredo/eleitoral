@@ -129,16 +129,22 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
-
+import os
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-STATIC_URL = '/static/'
+# URL base para acessar arquivos estáticos (ex: /static/css/style.css)
+STATIC_URL = 'static/'
 
+# Pasta onde o Django buscará arquivos estáticos adicionais
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
+
+# Pasta onde os arquivos estáticos serão coletados para produção
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
 
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
